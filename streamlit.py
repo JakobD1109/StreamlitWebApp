@@ -23,9 +23,20 @@ if st.button("🔄 Refresh Data"):
     st.rerun()
 
 st.title("Bitcoin Dashboard")
+
 # --- Fetch Bitcoin value data ---
 value_response = supabase.table("value").select("*").execute()
 value_data = value_response.data
+
+# Debug: Add data freshness info
+with st.expander("🔍 Data Debug Info", expanded=False):
+    st.write(f"**App refresh time:** {pd.Timestamp.now()}")
+    st.write(f"**Total records:** {len(value_data) if value_data else 0}")
+    if value_data:
+        latest_time = max(pd.to_datetime(row['open_time']) for row in value_data)
+        oldest_time = min(pd.to_datetime(row['open_time']) for row in value_data)
+        st.write(f"**Latest data time:** {latest_time}")
+        st.write(f"**Oldest data time:** {oldest_time}")
 
 if value_data:
     df_value = pd.DataFrame(value_data)
@@ -43,10 +54,20 @@ if value_data:
     all_days = df_value["date_only"].unique()
     all_days_sorted = sorted(all_days)
     today = pd.Timestamp.now().date()
+    
+    # Debug: Show date logic
+    with st.expander("📅 Date Filter Debug", expanded=False):
+        st.write(f"**Today's date:** {today}")
+        st.write(f"**All days in data:** {all_days_sorted}")
+        st.write(f"**Latest day in data:** {all_days_sorted[-1]}")
+        st.write(f"**Is latest day = today?** {all_days_sorted[-1] == today}")
+    
     if all_days_sorted[-1] == today:
         last_full_day = all_days_sorted[-2] if len(all_days_sorted) > 1 else all_days_sorted[-1]
+        st.info(f"📊 Showing data for: **{last_full_day}** (excluding today's incomplete data)")
     else:
         last_full_day = all_days_sorted[-1]
+        st.info(f"📊 Showing data for: **{last_full_day}** (latest available day)")
 
     df_last_day = df_value[df_value["date_only"] == last_full_day]
 
