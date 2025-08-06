@@ -20,7 +20,7 @@ if 'data_refresh' not in st.session_state:
 
 if st.button("🔄 Refresh Data"):
     st.session_state.data_refresh += 1
-    st.experimental_rerun()
+    st.rerun()
 
 st.title("Bitcoin Dashboard")
 # --- Fetch Bitcoin value data ---
